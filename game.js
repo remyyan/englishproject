@@ -123,11 +123,12 @@ class GameScene extends Phaser.Scene {
     this.taskActive = false;
     this.taskComplete = {};
     this.currentTask = null;
+    
+    // NEW: Controls whether the game is paused for a popup
+    this.isReadingFragment = false;
 
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, GAME_HEIGHT);
     this.physics.world.gravity.y = 620;
-    
-    // FIX: Disable bottom collision so player can fall out of bounds and die
     this.physics.world.checkCollision.down = false;
 
     this.createWorldArt();
@@ -203,8 +204,6 @@ class GameScene extends Phaser.Scene {
     this.platforms = this.physics.add.staticGroup();
     this.collapsingPlatforms = [];
 
-    // this.addPlatform(WORLD_WIDTH / 2, GROUND_Y + 20, WORLD_WIDTH, 40, 0x1a1a1a, false);
-
     this.addPlatform(200, 420, 320, 24, 0x3d4a54);
     this.addPlatform(620, 360, 180, 24, 0x3d4a54);
     this.addPlatform(920, 430, 260, 24, 0x3d4a54);
@@ -213,6 +212,7 @@ class GameScene extends Phaser.Scene {
 
     this.addPlatform(1885, 438, 280, 20, 0x252528);
     this.addPlatform(2210, 408, 240, 20, 0x252528);
+    this.addPlatform(2410, 358, 120, 20, 0x252528);
 
     this.addPlatform(2690, 430, 230, 26, 0x0e2a3e);
     this.addPlatform(2960, 365, 180, 26, 0x0e2a3e);
@@ -330,17 +330,18 @@ class GameScene extends Phaser.Scene {
   createMemoryFragments() {
     this.memoryFragments = this.physics.add.staticGroup();
     const fragments = [
-      { x: 760, y: 300, symbol: '♫', color: 0xffd35a, quote: '"Music became a way to survive the silence."' },
-      { x: 1350, y: 320, symbol: '◆', color: 0xffd35a, quote: '"Belonging felt temporary — always conditional."' },
-      { x: 2050, y: 360, symbol: '♪', color: 0xffd35a, quote: '"Expectation begins with perception of another."' },
-      { x: 3060, y: 320, symbol: '⚡', color: 0x9ff4ff, quote: '"Appearance becomes destiny in the eyes of others."' },
-      { x: 3820, y: 360, symbol: '✦', color: 0x9ff4ff, quote: '"The Creature learns humanity before hatred."' },
-      { x: 4810, y: 348, symbol: '✧', color: 0x9ff4ff, quote: '"Society creates the monsters it chooses to fear."' },
-      { x: 5920, y: 356, symbol: '☾', color: 0xd4b0ff, quote: '"Thought becomes paralysis when action is demanded."' },
-      { x: 6680, y: 280, symbol: '☠', color: 0xd4b0ff, quote: '"Performance replaces identity entirely."' },
-      { x: 8140, y: 288, symbol: '◎', color: 0xffffff, quote: '"Identity bends beneath the weight of expectation."' },
-      { x: 8720, y: 280, symbol: '◈', color: 0xffffff, quote: '"The self survives only when it resists the mask."' }
+      { x: 760, y: 300, symbol: '♫', color: 0xffd35a, quote: "We were losers and neighbourhood schemers... We were nobodies, or else, somehow, a city.", speaker: "Michael (Brother)", significance: "Society dismisses marginalized youth as 'nobodies,' forcing them to accept this mask of inferiority or band together to create their own identity and belonging." },
+      { x: 1350, y: 320, symbol: '◆', color: 0xffd35a, quote: "You can always do things to let the world know you're not nobody.", speaker: "Francis (Brother)", significance: "Francis uses 'style' as a literal mask. Outward appearance becomes a shield to protect his dignity against a society that expects him to fail." },
+      { x: 2050, y: 360, symbol: '♪', color: 0xffd35a, quote: "Memory's got nothing to do with the old and grey and faraway gone. Memory's the muscle sting of now.", speaker: "Michael (Brother)", significance: "The past is not a passive memory; it is a physical weight. The trauma of societal pressure leaves a lasting impact on identity that cannot simply be taken off." },
+      { x: 3060, y: 320, symbol: '⚡', color: 0x9ff4ff, quote: "I ought to be thy Adam, but I am rather the fallen angel, whom thou drivest from joy for no misdeed.", speaker: "The Creature (Frankenstein)", significance: "The Creature longs for belonging but is rejected solely based on his horrifying appearance. Society assigns him the mask of a 'monster' before he even commits a single crime." },
+      { x: 3820, y: 360, symbol: '✦', color: 0x9ff4ff, quote: "I was benevolent and good; misery made me a fiend.", speaker: "The Creature (Frankenstein)", significance: "Monsters are made, not born. The weight of societal rejection and the constant terrified gaze of others literally crushes his true nature until he becomes what they fear." },
+      { x: 4810, y: 348, symbol: '✧', color: 0x9ff4ff, quote: "Beware; for I am fearless, and therefore powerful.", speaker: "The Creature (Frankenstein)", significance: "Once the Creature fully accepts the monstrous mask society has forced upon him, he turns that rejection into a weapon. The mask completely replaces his original self." },
+      { x: 5920, y: 356, symbol: '☾', color: 0xd4b0ff, quote: "God hath given you one face, and you make yourselves another.", speaker: "Hamlet (Hamlet)", significance: "Hamlet critiques the superficiality of society, where everyone wears masks. Yet, he himself is trapped behind the 'antic disposition' (madness) he performs to survive." },
+      { x: 6680, y: 280, symbol: '☠', color: 0xd4b0ff, quote: "Seems, madam! nay, it is; I know not 'seems'.", speaker: "Hamlet (Hamlet)", significance: "Hamlet struggles to separate his authentic, internal grief from the performative mourning expected by the court. The mask of performance threatens to consume his true identity entirely." },
+      { x: 8140, y: 288, symbol: '◎', color: 0xffffff, quote: "To put an antic disposition on...", speaker: "Hamlet (Hamlet)", significance: "Hamlet makes a deliberate choice to wear a mask of madness. However, the tragedy lies in how playing a role can eventually erode the boundary between performance and reality." },
+      { x: 8720, y: 310, symbol: '◈', color: 0xffffff, quote: "There is nothing either good or bad, but thinking makes it so.", speaker: "Hamlet (Hamlet)", significance: "This synthesizes the entire game. The 'pressure' and the 'mask' are psychological prisons constructed by perception and societal expectation, not objective reality." }
     ];
+
     fragments.forEach((f) => this.addMemoryFragment(f));
     this.physics.add.overlap(this.player, this.memoryFragments, (_p, fragment) => {
       if (!fragment.active) return;
@@ -351,12 +352,15 @@ class GameScene extends Phaser.Scene {
       this.easePressure(-16);
       this.pauseUntil = this.time.now + 1000;
       this.player.body.setVelocity(0, 0);
-      this.showQuote(fragment.quote, 3800);
+      
+      // NEW: Show the immersive popup instead of the tiny quote box
+      this.showFragmentPopup(fragment.quote, fragment.speaker, fragment.significance);
+      
       this.flashFragmentEffect(fragment.x, fragment.y, fragment.memoryColor);
     });
   }
 
-  addMemoryFragment({ x, y, symbol, color, quote }) {
+  addMemoryFragment({ x, y, symbol, color, quote, speaker, significance }) {
     const item = this.add.container(x, y);
     const g = this.add.graphics();
     g.fillStyle(color, 0.08);
@@ -374,6 +378,8 @@ class GameScene extends Phaser.Scene {
 
     item.add([g, text]);
     item.quote = quote;
+    item.speaker = speaker;
+    item.significance = significance;
     item.memoryColor = color;
     this.physics.add.existing(item, true);
     item.body.setSize(44, 44);
@@ -381,6 +387,45 @@ class GameScene extends Phaser.Scene {
 
     this.tweens.add({ targets: item, y: y - 14, duration: 1200 + Phaser.Math.Between(0, 400), ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
     this.tweens.add({ targets: g, alpha: 0.5, duration: 800, yoyo: true, repeat: -1, delay: Phaser.Math.Between(0, 600) });
+  }
+
+  showFragmentPopup(quote, speaker, significance) {
+    this.isReadingFragment = true;
+    this.physics.pause();
+    this.popupGroup = this.add.group();
+
+    const cx = GAME_WIDTH / 2;
+    const cy = GAME_HEIGHT / 2;
+
+    const bg = this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.92).setScrollFactor(0).setDepth(2000);
+    this.popupGroup.add(bg);
+
+    const quoteText = this.add.text(cx, cy - 80, `"${quote}"`, {
+      fontFamily: 'Georgia, serif', fontSize: '24px', color: '#ffffff', align: 'center', wordWrap: { width: 700 }, fontStyle: 'italic', lineSpacing: 8
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(2001);
+    
+    const speakerText = this.add.text(cx, cy - 10, `— ${speaker}`, {
+      fontFamily: 'Arial', fontSize: '16px', color: '#ffd35a', align: 'center'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(2001);
+
+    const sigText = this.add.text(cx, cy + 65, significance, {
+      fontFamily: 'Arial', fontSize: '16px', color: '#cccccc', align: 'center', wordWrap: { width: 700 }, lineSpacing: 6
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(2001);
+
+    const continueText = this.add.text(cx, cy + 180, 'PRESS SPACE TO CONTINUE', {
+      fontFamily: 'Arial', fontSize: '14px', color: '#aaaaaa', fontStyle: 'bold'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(2001);
+
+    this.tweens.add({ targets: continueText, alpha: 0.3, duration: 800, yoyo: true, repeat: -1 });
+
+    this.popupGroup.addMultiple([quoteText, speakerText, sigText, continueText]);
+
+    const spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    spaceKey.once('down', () => {
+      this.popupGroup.destroy(true);
+      this.physics.resume();
+      this.isReadingFragment = false;
+    });
   }
 
   flashFragmentEffect(x, y, color) {
@@ -437,10 +482,10 @@ class GameScene extends Phaser.Scene {
   createCheckpointBooks() {
     this.checkpointBooks = this.physics.add.staticGroup();
     const books = [
-      { x: 1800, y: 412, color: 0xffd35a, accentStr: '#ffd35a' },
+      { x: 1900, y: 412, color: 0xffd35a, accentStr: '#ffd35a' },
       { x: 4250, y: 320, color: 0x9ff4ff, accentStr: '#9ff4ff' },
       { x: 7200, y: 380, color: 0xd4b0ff, accentStr: '#d4b0ff' }
-    ];
+    ]
     books.forEach((data) => {
       const g = this.add.graphics();
       g.fillStyle(data.color, 0.07);
@@ -491,13 +536,14 @@ class GameScene extends Phaser.Scene {
       lampG.lineStyle(2, 0x888888, 0.8);
       lampG.strokeLineShape(new Phaser.Geom.Line(item.x, item.y, item.x, item.y - 16));
 
+      // Fixed: Dedicated Graphics object to draw the perfectly centered, swinging beams
       const beamGfx = this.add.graphics();
       
       const watchLabel = this.add.text(item.x, item.y - 28, '◉ WATCH', {
         fontFamily: 'Arial', fontSize: '12px', color: '#ff8888', fontStyle: 'bold'
       }).setOrigin(0.5);
 
-      this.spotlights.push({ ...item, beamGfx, lampG, watchLabel }); 
+      this.spotlights.push({ ...item, beamGfx, lampG, watchLabel });
     });
   }
 
@@ -666,13 +712,15 @@ class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    // NEW: Stop the entire game loop if the player is reading a fragment popup!
+    if (this.isReadingFragment) return;
+
     this.updateSection();
     this.updateSpotlights(time);
     this.updateElectricHazards(time);
     this.updatePlayerGraphics();
 
-    // If player falls below the ground, reset to checkpoint (death)
-    if (this.player.y > GAME_HEIGHT + 120) this.resetToCheckpoint();
+    if (this.player.y > GAME_HEIGHT) this.resetToCheckpoint();
 
     if (this.taskActive) {
       this.player.body.setVelocityX(0);
@@ -747,39 +795,27 @@ class GameScene extends Phaser.Scene {
       
       spot.beamGfx.clear();
       
-      // FIXED: The top of the beam stays completely still, locked to the lamp
       const tipX = spot.x;
       const tipY = spot.y + 10;
-      
       const baseY = spot.y + 380; 
-      
-      // ONLY the bottom of the beam swings left and right
       const bottomCenterX = spot.x + sweep; 
       
-      // Draw Outer beam (Solid Red)
       spot.beamGfx.fillStyle(0xff3333, alpha);
       spot.beamGfx.fillTriangle(tipX, tipY, bottomCenterX - 65, baseY, bottomCenterX + 65, baseY);
       
-      // Draw Inner beam (Lighter Pink/Red)
       spot.beamGfx.fillStyle(0xff6666, alpha);
       spot.beamGfx.fillTriangle(tipX, tipY, bottomCenterX - 20, baseY, bottomCenterX + 20, baseY);
 
-      // 1. Figure out how far down the cone the player is (0.0 is top, 1.0 is bottom)
       const heightPercent = (this.player.y - tipY) / (baseY - tipY);
-      
-      // 2. Find the exact visual center of the slanted beam at the player's height
       const beamCenterAtPlayer = tipX + (bottomCenterX - tipX) * heightPercent;
-      
-      // 3. Find the width of the beam at the player's height (* 0.8 makes it 20% more forgiving to dodge!)
       const currentBeamWidth = (spot.width * heightPercent) * 0.8;
 
-      // 4. Check if the player is inside this newly calculated, accurate hitbox
       const caughtH = Math.abs(this.player.x - beamCenterAtPlayer) < currentBeamWidth / 2;
       const inBeamHeight = this.player.y > spot.y + 80;
       const correctSection = Math.abs(this.player.x - spot.x) < spot.range + 320;
 
+      // FIXED: Safely dodgeable by jumping, perfectly centered hitbox
       if (caughtH && inBeamHeight && correctSection && time > this.lastSpotlightHit + 1800 && Math.abs(this.player.body.velocity.x) > 0 && this.player.body.blocked.down) {
-        
         this.lastSpotlightHit = time;
         this.spotlightWarningUntil = time + 1200;
         this.spikePressure(16, '◉  SPOTTED — AVOID THE CONE');
@@ -1007,9 +1043,8 @@ class GameScene extends Phaser.Scene {
     this.lastFallTime = this.time.now;
     this.player.body.reset(this.lastCheckpoint.x, this.lastCheckpoint.y);
     this.player.body.setVelocity(0, 0);
-    this.showQuote('You fell. Returned to the last checkpoint book.', 2600);    
-    this.easePressure(-50); 
-    
+    this.showQuote('You fell. Returned to the last checkpoint book.', 2600);
+    this.easePressure(-50); // Gives pressure bar relief when dying!
     this.cameras.main.flash(130, 255, 255, 255, true);
   }
 }
