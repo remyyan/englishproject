@@ -9,7 +9,7 @@ const SECTION_DATA = [
   { key: 'frankenstein', title: 'ZONE 2 — THE LABORATORY', subtitle: 'Frankenstein', start: 2500, end: 4400, color: 0x071525, accent: '#9ff4ff', accentHex: 0x9ff4ff, pressureRate: 1.08, whisperDelay: 4200 },
   { key: 'reflection2', title: 'REFLECTION II', subtitle: 'Rejection & Monstrosity', start: 4400, end: 5200, color: 0x050910, accent: '#9ff4ff', accentHex: 0x9ff4ff, pressureRate: -0.28, whisperDelay: 6600 },
   { key: 'hamlet', title: 'ZONE 3 — THE GRAVEYARD', subtitle: 'Hamlet', start: 5200, end: 7000, color: 0x0e0a14, accent: '#d4b0ff', accentHex: 0xd4b0ff, pressureRate: 1.24, whisperDelay: 3100 },
-  { key: 'synthesis', title: 'FINAL SYNTHESIS', subtitle: 'Collapse of the Mask', start: 7000, end: WORLD_WIDTH, color: 0x090505, accent: '#ffffff', accentHex: 0xffffff, pressureRate: 1.42, whisperDelay: 2400 }
+  { key: 'synthesis', title: 'FINAL SYNTHESIS', subtitle: 'Collapse of the Mask', start: 7000, end: WORLD_WIDTH, color: 0x090505, accent: '#ffffff', accentHex: 0xffffff, pressureRate: 0.95, whisperDelay: 2400 }
 ];
 
 class StartScene extends Phaser.Scene {
@@ -126,6 +126,9 @@ class GameScene extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, GAME_HEIGHT);
     this.physics.world.gravity.y = 620;
+    
+    // FIX: Disable bottom collision so player can fall out of bounds and die
+    this.physics.world.checkCollision.down = false;
 
     this.createWorldArt();
     this.createPlatforms();
@@ -200,9 +203,9 @@ class GameScene extends Phaser.Scene {
     this.platforms = this.physics.add.staticGroup();
     this.collapsingPlatforms = [];
 
-    this.addPlatform(WORLD_WIDTH / 2, GROUND_Y + 20, WORLD_WIDTH, 40, 0x1a1a1a, false);
+    // this.addPlatform(WORLD_WIDTH / 2, GROUND_Y + 20, WORLD_WIDTH, 40, 0x1a1a1a, false);
 
-    this.addPlatform(320, 420, 240, 24, 0x3d4a54);
+    this.addPlatform(200, 420, 320, 24, 0x3d4a54);
     this.addPlatform(620, 360, 180, 24, 0x3d4a54);
     this.addPlatform(920, 430, 260, 24, 0x3d4a54);
     this.addPlatform(1260, 370, 210, 24, 0x3d4a54);
@@ -277,13 +280,20 @@ class GameScene extends Phaser.Scene {
     this.playerGfx = this.add.graphics();
     this.drawPlayer(this.playerGfx, 0, 0, 1.0);
 
-    this.player = this.add.rectangle(80, 430, 30, 48, 0xffffff, 0);
+    this.player = this.add.rectangle(200, 360, 30, 48, 0xffffff, 0);
+
     this.physics.add.existing(this.player);
+
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(30, 48);
+
+    this.player.body.setDragX(800);
+
     this.physics.add.collider(this.player, this.platforms, (player, platform) => {
       this.handlePlatformContact(player, platform);
     });
+
+    this.lastCheckpoint = { x: 200, y: 360 };
   }
 
   drawPlayer(g, offX, offY, alpha) {
@@ -329,7 +339,7 @@ class GameScene extends Phaser.Scene {
       { x: 5920, y: 356, symbol: '☾', color: 0xd4b0ff, quote: '"Thought becomes paralysis when action is demanded."' },
       { x: 6680, y: 280, symbol: '☠', color: 0xd4b0ff, quote: '"Performance replaces identity entirely."' },
       { x: 8140, y: 288, symbol: '◎', color: 0xffffff, quote: '"Identity bends beneath the weight of expectation."' },
-      { x: 8720, y: 360, symbol: '◈', color: 0xffffff, quote: '"The self survives only when it resists the mask."' }
+      { x: 8720, y: 280, symbol: '◈', color: 0xffffff, quote: '"The self survives only when it resists the mask."' }
     ];
     fragments.forEach((f) => this.addMemoryFragment(f));
     this.physics.add.overlap(this.player, this.memoryFragments, (_p, fragment) => {
@@ -386,9 +396,9 @@ class GameScene extends Phaser.Scene {
   createTaskStations() {
     this.taskStations = this.physics.add.staticGroup();
     const tasks = [
-      { x: 1120, y: 430, id: 'brother', name: 'Fix the Valve', color: 0xf2c26b, accentStr: '#f2c26b', icon: '⚙', question: 'Choose the response that eases societal pressure.', options: ['OVERLOAD', 'BALANCE', 'SHUT OFF'], answer: 1, success: 'Equilibrium found. The watcher softens.' },
-      { x: 3220, y: 380, id: 'frankenstein', name: 'Reset Circuit', color: 0x9ff4ff, accentStr: '#9ff4ff', icon: '⚡', question: 'Find the choice that calms the creation.', options: ['REMOVE HEART', 'REPAIR', 'ABANDON'], answer: 1, success: 'The laboratory quiets. Something heals.' },
-      { x: 6350, y: 345, id: 'hamlet', name: 'Balance the Stage', color: 0xd4b0ff, accentStr: '#d4b0ff', icon: '♟', question: 'What loosens the grip of performance?', options: ['ACT HARDER', 'STAND STILL', 'QUESTION'], answer: 2, success: 'Doubt steadies you. The stage breathes again.' }
+      { x: 920, y: 430, id: 'brother', name: 'Fix the Valve', color: 0xf2c26b, accentStr: '#f2c26b', icon: '⚙', question: 'Choose the response that eases societal pressure.', options: ['OVERLOAD', 'BALANCE', 'SHUT OFF'], answer: 1, success: 'Equilibrium found. The watcher softens.' },
+      { x: 3890, y: 405, id: 'frankenstein', name: 'Reset Circuit', color: 0x9ff4ff, accentStr: '#9ff4ff', icon: '⚡', question: 'Find the choice that calms the creation.', options: ['REMOVE HEART', 'REPAIR', 'ABANDON'], answer: 1, success: 'The laboratory quiets. Something heals.' },
+      { x: 7760, y: 405, id: 'hamlet', name: 'Balance the Stage', color: 0xd4b0ff, accentStr: '#d4b0ff', icon: '♟', question: 'What loosens the grip of performance?', options: ['ACT HARDER', 'STAND STILL', 'QUESTION'], answer: 2, success: 'Doubt steadies you. The stage breathes again.' }
     ];
 
     tasks.forEach((task) => {
@@ -427,9 +437,9 @@ class GameScene extends Phaser.Scene {
   createCheckpointBooks() {
     this.checkpointBooks = this.physics.add.staticGroup();
     const books = [
-      { x: 1700, y: 412, color: 0xffd35a, accentStr: '#ffd35a' },
-      { x: 4300, y: 390, color: 0x9ff4ff, accentStr: '#9ff4ff' },
-      { x: 6900, y: 380, color: 0xd4b0ff, accentStr: '#d4b0ff' }
+      { x: 1800, y: 412, color: 0xffd35a, accentStr: '#ffd35a' },
+      { x: 4250, y: 320, color: 0x9ff4ff, accentStr: '#9ff4ff' },
+      { x: 7200, y: 380, color: 0xd4b0ff, accentStr: '#d4b0ff' }
     ];
     books.forEach((data) => {
       const g = this.add.graphics();
@@ -481,13 +491,13 @@ class GameScene extends Phaser.Scene {
       lampG.lineStyle(2, 0x888888, 0.8);
       lampG.strokeLineShape(new Phaser.Geom.Line(item.x, item.y, item.x, item.y - 16));
 
-      const beam = this.add.triangle(item.x, item.y + 10, 0, 0, -65, 370, 65, 370, 0xff3333, 0.13);
-      const beamInner = this.add.triangle(item.x, item.y + 10, 0, 0, -20, 370, 20, 370, 0xff6666, 0.06);
+      const beamGfx = this.add.graphics();
+      
       const watchLabel = this.add.text(item.x, item.y - 28, '◉ WATCH', {
         fontFamily: 'Arial', fontSize: '12px', color: '#ff8888', fontStyle: 'bold'
       }).setOrigin(0.5);
 
-      this.spotlights.push({ ...item, beam, beamInner, lampG, watchLabel });
+      this.spotlights.push({ ...item, beamGfx, lampG, watchLabel }); 
     });
   }
 
@@ -661,6 +671,7 @@ class GameScene extends Phaser.Scene {
     this.updateElectricHazards(time);
     this.updatePlayerGraphics();
 
+    // If player falls below the ground, reset to checkpoint (death)
     if (this.player.y > GAME_HEIGHT + 120) this.resetToCheckpoint();
 
     if (this.taskActive) {
@@ -729,19 +740,46 @@ class GameScene extends Phaser.Scene {
 
   updateSpotlights(time) {
     this.spotlights.forEach((spot) => {
-      const sweep = Math.sin(time * 0.0014) * spot.range;
-      spot.beam.x = spot.x + sweep;
-      spot.beamInner.x = spot.x + sweep;
+      const sweep = Math.sin(time * 0.0007) * spot.range;
+      
       spot.watchLabel.x = spot.x + sweep * 0.26;
-      const alpha = 0.1 + Math.sin(time / 160) * 0.04;
-      spot.beam.setAlpha(alpha);
-      spot.beamInner.setAlpha(alpha * 0.7);
+      const alpha = 0.75 + Math.sin(time / 160) * 0.15;
+      
+      spot.beamGfx.clear();
+      
+      // FIXED: The top of the beam stays completely still, locked to the lamp
+      const tipX = spot.x;
+      const tipY = spot.y + 10;
+      
+      const baseY = spot.y + 380; 
+      
+      // ONLY the bottom of the beam swings left and right
+      const bottomCenterX = spot.x + sweep; 
+      
+      // Draw Outer beam (Solid Red)
+      spot.beamGfx.fillStyle(0xff3333, alpha);
+      spot.beamGfx.fillTriangle(tipX, tipY, bottomCenterX - 65, baseY, bottomCenterX + 65, baseY);
+      
+      // Draw Inner beam (Lighter Pink/Red)
+      spot.beamGfx.fillStyle(0xff6666, alpha);
+      spot.beamGfx.fillTriangle(tipX, tipY, bottomCenterX - 20, baseY, bottomCenterX + 20, baseY);
 
-      const caughtH = Math.abs(this.player.x - spot.beam.x) < spot.width / 2;
+      // 1. Figure out how far down the cone the player is (0.0 is top, 1.0 is bottom)
+      const heightPercent = (this.player.y - tipY) / (baseY - tipY);
+      
+      // 2. Find the exact visual center of the slanted beam at the player's height
+      const beamCenterAtPlayer = tipX + (bottomCenterX - tipX) * heightPercent;
+      
+      // 3. Find the width of the beam at the player's height (* 0.8 makes it 20% more forgiving to dodge!)
+      const currentBeamWidth = (spot.width * heightPercent) * 0.8;
+
+      // 4. Check if the player is inside this newly calculated, accurate hitbox
+      const caughtH = Math.abs(this.player.x - beamCenterAtPlayer) < currentBeamWidth / 2;
       const inBeamHeight = this.player.y > spot.y + 80;
       const correctSection = Math.abs(this.player.x - spot.x) < spot.range + 320;
 
-      if (caughtH && inBeamHeight && correctSection && time > this.lastSpotlightHit + 1800) {
+      if (caughtH && inBeamHeight && correctSection && time > this.lastSpotlightHit + 1800 && Math.abs(this.player.body.velocity.x) > 0 && this.player.body.blocked.down) {
+        
         this.lastSpotlightHit = time;
         this.spotlightWarningUntil = time + 1200;
         this.spikePressure(16, '◉  SPOTTED — AVOID THE CONE');
@@ -794,7 +832,7 @@ class GameScene extends Phaser.Scene {
 
     const r = this.pressure / 100;
     const refWeight = section.key.includes('reflection') ? -80 : 0;
-    const synWeight = section.key === 'synthesis' ? 80 : 0;
+    const synWeight = section.key === 'synthesis' ? 20 : 0;
     this.physics.world.gravity.y = 620 + refWeight + synWeight + (320 * r);
     this.currentJumpVelocity = -520 + (120 * r);
 
@@ -969,8 +1007,9 @@ class GameScene extends Phaser.Scene {
     this.lastFallTime = this.time.now;
     this.player.body.reset(this.lastCheckpoint.x, this.lastCheckpoint.y);
     this.player.body.setVelocity(0, 0);
-    this.showQuote('You fell. Returned to the last checkpoint book.', 2600);
-    this.spikePressure(8, 'RESET');
+    this.showQuote('You fell. Returned to the last checkpoint book.', 2600);    
+    this.easePressure(-50); 
+    
     this.cameras.main.flash(130, 255, 255, 255, true);
   }
 }
