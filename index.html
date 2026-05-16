@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Weight of the Mask: An ENG4U Synthesis</title>
+
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -28,13 +30,14 @@
     }
   </style>
 </head>
+
 <body>
   <div id="game-container"></div>
 
   <script>
     const GAME_WIDTH = 960;
     const GAME_HEIGHT = 540;
-    const WORLD_WIDTH = 3900;
+    const WORLD_WIDTH = 4200;
     const GROUND_Y = 500;
 
     class StartScene extends Phaser.Scene {
@@ -43,74 +46,92 @@
       }
 
       create() {
-        this.cameras.main.setBackgroundColor('#080811');
+        this.cameras.main.setBackgroundColor('#050509');
 
-        this.add.text(GAME_WIDTH / 2, 120, 'The Weight of the Mask', {
+        this.add.text(GAME_WIDTH / 2, 110, 'The Weight of the Mask', {
           fontFamily: 'Georgia, serif',
-          fontSize: '48px',
-          color: '#ffffff',
-          align: 'center'
+          fontSize: '50px',
+          color: '#ffffff'
         }).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 178, 'An ENG4U Synthesis', {
+        this.add.text(GAME_WIDTH / 2, 170, 'An ENG4U Literary Synthesis', {
           fontFamily: 'Georgia, serif',
           fontSize: '28px',
-          color: '#cfcfff',
-          align: 'center'
+          color: '#d7d7ff'
         }).setOrigin(0.5);
 
         this.add.text(
           GAME_WIDTH / 2,
-          270,
-          'Keep moving forward, but do not let the expectations of others crush you.',
+          255,
+          'Move through three literary worlds shaped by pressure, expectation, and identity.',
           {
-            fontFamily: 'Arial, sans-serif',
+            fontFamily: 'Arial',
             fontSize: '22px',
-            color: '#f5f5f5',
+            color: '#eeeeee',
             align: 'center',
-            wordWrap: { width: 760 }
+            wordWrap: { width: 780 }
           }
         ).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 365, 'Arrow keys: move   |   Spacebar: jump', {
-          fontFamily: 'Arial, sans-serif',
+        this.add.text(
+          GAME_WIDTH / 2,
+          325,
+          'As societal pressure rises, gravity becomes heavier and movement becomes harder.',
+          {
+            fontFamily: 'Arial',
+            fontSize: '20px',
+            color: '#c8c8c8',
+            align: 'center',
+            wordWrap: { width: 700 }
+          }
+        ).setOrigin(0.5);
+
+        this.add.text(GAME_WIDTH / 2, 390, 'Arrow Keys = Move   |   Spacebar = Jump', {
+          fontFamily: 'Arial',
           fontSize: '20px',
-          color: '#ffd35a',
-          align: 'center'
+          color: '#ffd35a'
         }).setOrigin(0.5);
 
-        const prompt = this.add.text(GAME_WIDTH / 2, 440, 'Press SPACE to begin', {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '24px',
-          color: '#ffffff'
-        }).setOrigin(0.5);
+        const beginText = this.add.text(
+          GAME_WIDTH / 2,
+          460,
+          'Press SPACE to Begin',
+          {
+            fontFamily: 'Arial',
+            fontSize: '26px',
+            color: '#ffffff'
+          }
+        ).setOrigin(0.5);
 
         this.tweens.add({
-          targets: prompt,
-          alpha: 0.25,
+          targets: beginText,
+          alpha: 0.2,
           duration: 650,
           yoyo: true,
           repeat: -1
         });
 
-        this.input.keyboard.once('keydown-SPACE', () => this.scene.start('GameScene'));
+        this.input.keyboard.once('keydown-SPACE', () => {
+          this.scene.start('GameScene');
+        });
       }
     }
 
     class GameScene extends Phaser.Scene {
       constructor() {
         super('GameScene');
+
         this.pressure = 0;
         this.lastPressureResetX = 80;
         this.currentJumpVelocity = -520;
         this.shakeCooldown = 0;
+        this.lastWhisperTime = 0;
       }
 
       create() {
         this.pressure = 0;
         this.lastPressureResetX = 80;
         this.currentJumpVelocity = -520;
-        this.shakeCooldown = 0;
 
         this.physics.world.setBounds(0, 0, WORLD_WIDTH, GAME_HEIGHT);
         this.physics.world.gravity.y = 620;
@@ -130,294 +151,703 @@
       }
 
       createWorldArt() {
-        this.add.rectangle(600, 270, 1200, GAME_HEIGHT, 0x2b2624).setOrigin(0.5);
-        this.add.rectangle(1800, 270, 1200, GAME_HEIGHT, 0x122943).setOrigin(0.5);
-        this.add.rectangle(3000, 270, 1800, GAME_HEIGHT, 0x1a102c).setOrigin(0.5);
 
-        this.add.text(90, 55, 'ZONE 1: THE PARK — Brother', {
-          fontFamily: 'Georgia, serif',
-          fontSize: '24px',
+        // BACKGROUNDS
+
+        this.add.rectangle(650, 270, 1300, GAME_HEIGHT, 0x2b2624);
+        this.add.rectangle(2050, 270, 1400, GAME_HEIGHT, 0x102a45);
+        this.add.rectangle(3400, 270, 1800, GAME_HEIGHT, 0x170f2a);
+
+        // ZONE TITLES
+
+        this.add.text(80, 55, 'ZONE 1 — THE PARK (Brother)', {
+          fontFamily: 'Georgia',
+          fontSize: '26px',
           color: '#f2c26b'
         });
-        this.add.text(1290, 55, 'ZONE 2: THE LABORATORY — Frankenstein', {
-          fontFamily: 'Georgia, serif',
-          fontSize: '24px',
-          color: '#aee9ff'
+
+        this.add.text(1480, 55, 'ZONE 2 — THE LABORATORY (Frankenstein)', {
+          fontFamily: 'Georgia',
+          fontSize: '26px',
+          color: '#bdefff'
         });
-        this.add.text(2490, 55, 'ZONE 3: THE CASTLE GRAVEYARD — Hamlet', {
-          fontFamily: 'Georgia, serif',
-          fontSize: '24px',
+
+        this.add.text(2880, 55, 'ZONE 3 — THE CASTLE GRAVEYARD (Hamlet)', {
+          fontFamily: 'Georgia',
+          fontSize: '26px',
           color: '#d4b0ff'
         });
 
-        for (let x = 130; x < 1100; x += 210) {
-          this.add.rectangle(x, GROUND_Y - 60, 40, 120, 0x161616).setOrigin(0.5);
-          this.add.rectangle(x + 24, GROUND_Y - 125, 90, 16, 0x333333).setOrigin(0.5);
+        // PRESSURE WORDS
+
+        const pressureWords = [
+          'BELONG',
+          'MONSTER',
+          'BE A MAN',
+          'AVENGE',
+          'PERFORM',
+          'DO NOT FAIL',
+          'OBEY',
+          'HIDE',
+          'PROVE YOURSELF',
+          'ACT NORMAL'
+        ];
+
+        pressureWords.forEach((word, index) => {
+
+          this.add.text(
+            220 + (index * 360),
+            Phaser.Math.Between(120, 420),
+            word,
+            {
+              fontFamily: 'Arial',
+              fontSize: '30px',
+              color: '#ffffff'
+            }
+          )
+          .setAlpha(0.05)
+          .setRotation(Phaser.Math.FloatBetween(-0.25, 0.25));
+
+        });
+
+        // BROTHER ZONE ART
+
+        for (let x = 140; x < 1200; x += 210) {
+
+          this.add.rectangle(x, GROUND_Y - 60, 40, 120, 0x151515);
+
+          this.add.rectangle(
+            x + 24,
+            GROUND_Y - 125,
+            90,
+            16,
+            0x333333
+          );
+
         }
 
-        for (let x = 1300; x < 2300; x += 190) {
-          this.add.rectangle(x, 245, 16, 250, 0xd9fbff).setAlpha(0.18);
-          this.add.rectangle(x + 40, 180, 70, 18, 0x9ff4ff).setAlpha(0.38);
-          this.add.line(x, 0, 0, 315, 80, 260, 0xffffff).setAlpha(0.25);
+        // FRANKENSTEIN LAB LIGHTS
+
+        for (let x = 1450; x < 2500; x += 200) {
+
+          this.add.rectangle(x, 260, 18, 250, 0xd9fbff)
+            .setAlpha(0.16);
+
+          this.add.rectangle(x + 40, 180, 70, 18, 0x9ff4ff)
+            .setAlpha(0.35);
+
+          const spark = this.add.circle(x, 110, 10, 0x9ff4ff);
+
+          this.tweens.add({
+            targets: spark,
+            alpha: 0.15,
+            duration: 120,
+            yoyo: true,
+            repeat: -1,
+            delay: Phaser.Math.Between(0, 300)
+          });
+
         }
 
-        for (let x = 2520; x < 3720; x += 180) {
-          this.add.rectangle(x, GROUND_Y - 28, 80, 56, 0x2d2d36).setOrigin(0.5);
-          this.add.rectangle(x, GROUND_Y - 65, 45, 18, 0x3a3a46).setOrigin(0.5);
-          this.add.rectangle(x, GROUND_Y - 90, 15, 48, 0x3a3a46).setOrigin(0.5);
+        // HAMLET GRAVES
+
+        for (let x = 2820; x < 4000; x += 180) {
+
+          this.add.rectangle(x, GROUND_Y - 28, 80, 56, 0x2d2d36);
+
+          this.add.rectangle(x, GROUND_Y - 65, 45, 18, 0x3a3a46);
+
+          this.add.rectangle(x, GROUND_Y - 90, 15, 48, 0x3a3a46);
+
         }
+
+        // FOG
+
+        for (let i = 0; i < 22; i++) {
+
+          this.add.ellipse(
+            2800 + (i * 80),
+            Phaser.Math.Between(380, 500),
+            180,
+            60,
+            0xffffff,
+            0.05
+          );
+
+        }
+
       }
 
       createPlatforms() {
+
         this.platforms = this.physics.add.staticGroup();
 
         const addPlatform = (x, y, width, height = 28) => {
-          const platform = this.add.rectangle(x, y, width, height, 0x303030).setOrigin(0.5);
+
+          const platform = this.add.rectangle(
+            x,
+            y,
+            width,
+            height,
+            0x303030
+          );
+
           this.physics.add.existing(platform, true);
+
           this.platforms.add(platform);
-          return platform;
+
         };
 
         addPlatform(WORLD_WIDTH / 2, GROUND_Y + 20, WORLD_WIDTH, 40);
 
-        addPlatform(310, 410, 210);
-        addPlatform(640, 350, 180);
-        addPlatform(920, 430, 240);
-        addPlatform(1260, 390, 190);
-        addPlatform(1510, 325, 150);
-        addPlatform(1790, 385, 210);
-        addPlatform(2110, 305, 170);
-        addPlatform(2450, 420, 220);
-        addPlatform(2760, 345, 160);
-        addPlatform(3050, 405, 240);
-        addPlatform(3350, 330, 190);
+        addPlatform(320, 410, 220);
+        addPlatform(640, 350, 170);
+        addPlatform(960, 430, 230);
+
+        addPlatform(1250, 430, 180);
+        addPlatform(1480, 390, 180);
+        addPlatform(1720, 350, 170);
+        addPlatform(1980, 390, 220);
+
+        addPlatform(2250, 340, 190);
+
+        addPlatform(2700, 420, 220);
+        addPlatform(3000, 345, 170);
+        addPlatform(3300, 405, 240);
+        addPlatform(3600, 330, 200);
+
       }
 
       createPlayer() {
-        this.player = this.add.rectangle(80, 430, 34, 52, 0xffffff).setOrigin(0.5);
+
+        this.player = this.add.rectangle(
+          80,
+          430,
+          34,
+          52,
+          0xffffff
+        );
+
         this.physics.add.existing(this.player);
+
         this.player.body.setCollideWorldBounds(true);
+
         this.player.body.setSize(34, 52);
+
         this.physics.add.collider(this.player, this.platforms);
+
       }
 
       createCollectibles() {
+
         this.collectibles = this.physics.add.staticGroup();
 
-        const addCollectible = (x, y, label, quote) => {
+        const addCollectible = (x, y, symbol, quote) => {
+
           const item = this.add.container(x, y);
+
           const glow = this.add.circle(0, 0, 34, 0xffd23c, 0.18);
+
           const body = this.add.rectangle(0, 0, 38, 38, 0xffcc33);
-          const text = this.add.text(0, 1, label, {
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '23px',
+
+          const text = this.add.text(0, 0, symbol, {
+            fontFamily: 'Arial',
+            fontSize: '24px',
             color: '#181818',
             fontStyle: 'bold'
           }).setOrigin(0.5);
+
           item.add([glow, body, text]);
+
           item.quote = quote;
+
           this.physics.add.existing(item, true);
+
           item.body.setSize(44, 44);
+
           this.collectibles.add(item);
-          this.tweens.add({ targets: item, y: y - 10, duration: 900, yoyo: true, repeat: -1 });
+
+          this.tweens.add({
+            targets: item,
+            y: y - 10,
+            duration: 900,
+            yoyo: true,
+            repeat: -1
+          });
+
         };
 
-        addCollectible(710, 302, '♫', 'We were children of the sun... trying to find a way to belong.');
-        addCollectible(1840, 337, '⚡', 'I ought to be thy Adam, but I am rather the fallen angel.');
-        addCollectible(3105, 357, '☠', 'To be, or not to be: that is the question.');
+        addCollectible(
+          760,
+          302,
+          '♫',
+          '“We were children trying to find a way to belong.”'
+        );
 
-        this.physics.add.overlap(this.player, this.collectibles, (_player, collectible) => {
-          if (!collectible.active) return;
-          collectible.body.enable = false;
-          collectible.setActive(false);
-          collectible.setVisible(false);
-          this.tweens.killTweensOf(collectible);
-          this.resetPressure(collectible.quote);
-        });
+        addCollectible(
+          2050,
+          337,
+          '⚡',
+          '“I ought to be thy Adam, but I am rather the fallen angel.”'
+        );
+
+        addCollectible(
+          3400,
+          357,
+          '☠',
+          '“To be, or not to be: that is the question.”'
+        );
+
+        this.physics.add.overlap(
+          this.player,
+          this.collectibles,
+          (_player, collectible) => {
+
+            if (!collectible.active) return;
+
+            collectible.body.enable = false;
+            collectible.setActive(false);
+            collectible.setVisible(false);
+
+            this.resetPressure(collectible.quote);
+
+          }
+        );
+
       }
 
       createPortal() {
-        this.portal = this.add.rectangle(3770, GROUND_Y - 75, 70, 130, 0x8f5cff).setOrigin(0.5);
-        this.portalInner = this.add.rectangle(3770, GROUND_Y - 75, 44, 100, 0x0f0820).setOrigin(0.5);
+
+        this.portal = this.add.rectangle(
+          4050,
+          GROUND_Y - 75,
+          70,
+          130,
+          0x8f5cff
+        );
+
+        this.portalInner = this.add.rectangle(
+          4050,
+          GROUND_Y - 75,
+          44,
+          100,
+          0x0f0820
+        );
+
         this.physics.add.existing(this.portal, true);
+
         this.tweens.add({
           targets: this.portal,
-          alpha: 0.45,
-          duration: 520,
+          alpha: 0.4,
+          duration: 500,
           yoyo: true,
           repeat: -1
         });
-        this.physics.add.overlap(this.player, this.portal, () => this.scene.start('EndScene'));
+
+        this.physics.add.overlap(
+          this.player,
+          this.portal,
+          () => {
+            this.scene.start('EndScene');
+          }
+        );
+
       }
 
       createUi() {
-        this.uiBackground = this.add.rectangle(0, 0, GAME_WIDTH, 74, 0x000000, 0.62)
-          .setOrigin(0, 0)
-          .setScrollFactor(0)
-          .setDepth(1000);
+
+        this.add.rectangle(
+          0,
+          0,
+          GAME_WIDTH,
+          74,
+          0x000000,
+          0.65
+        )
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+        .setDepth(1000);
 
         this.add.text(24, 14, 'SOCIETAL PRESSURE', {
-          fontFamily: 'Arial, sans-serif',
+          fontFamily: 'Arial',
           fontSize: '17px',
           color: '#ffffff',
           fontStyle: 'bold'
-        }).setScrollFactor(0).setDepth(1001);
+        })
+        .setScrollFactor(0)
+        .setDepth(1001);
 
-        this.pressureFrame = this.add.rectangle(24, 43, 360, 18, 0xffffff, 0.20)
-          .setOrigin(0, 0.5)
-          .setScrollFactor(0)
-          .setDepth(1001);
-        this.pressureBar = this.add.rectangle(24, 43, 0, 16, 0xffd23c)
-          .setOrigin(0, 0.5)
-          .setScrollFactor(0)
-          .setDepth(1002);
+        this.pressureFrame = this.add.rectangle(
+          24,
+          43,
+          360,
+          18,
+          0xffffff,
+          0.2
+        )
+        .setOrigin(0, 0.5)
+        .setScrollFactor(0)
+        .setDepth(1001);
+
+        this.pressureBar = this.add.rectangle(
+          24,
+          43,
+          0,
+          16,
+          0xffd23c
+        )
+        .setOrigin(0, 0.5)
+        .setScrollFactor(0)
+        .setDepth(1002);
+
         this.pressureText = this.add.text(398, 33, '0%', {
-          fontFamily: 'Arial, sans-serif',
+          fontFamily: 'Arial',
           fontSize: '18px',
           color: '#ffffff'
-        }).setScrollFactor(0).setDepth(1001);
+        })
+        .setScrollFactor(0)
+        .setDepth(1001);
 
-        this.quoteBox = this.add.rectangle(GAME_WIDTH / 2, 106, 790, 72, 0x000000, 0.72)
-          .setScrollFactor(0)
-          .setDepth(1000)
-          .setVisible(false);
-        this.quoteText = this.add.text(GAME_WIDTH / 2, 106, '', {
-          fontFamily: 'Georgia, serif',
-          fontSize: '22px',
-          color: '#fff2b6',
-          align: 'center',
-          wordWrap: { width: 740 }
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(1001).setVisible(false);
+        this.warningText = this.add.text(
+          GAME_WIDTH / 2,
+          110,
+          '',
+          {
+            fontFamily: 'Arial',
+            fontSize: '28px',
+            color: '#ff6666',
+            fontStyle: 'bold'
+          }
+        )
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(1001);
 
-        this.struggleOverlay = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x777777, 0)
-          .setOrigin(0, 0)
-          .setScrollFactor(0)
-          .setDepth(900);
+        this.quoteBox = this.add.rectangle(
+          GAME_WIDTH / 2,
+          170,
+          790,
+          72,
+          0x000000,
+          0.72
+        )
+        .setScrollFactor(0)
+        .setDepth(1000)
+        .setVisible(false);
+
+        this.quoteText = this.add.text(
+          GAME_WIDTH / 2,
+          170,
+          '',
+          {
+            fontFamily: 'Georgia',
+            fontSize: '22px',
+            color: '#fff2b6',
+            align: 'center',
+            wordWrap: { width: 740 }
+          }
+        )
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(1001)
+        .setVisible(false);
+
+        this.struggleOverlay = this.add.rectangle(
+          0,
+          0,
+          GAME_WIDTH,
+          GAME_HEIGHT,
+          0x777777,
+          0
+        )
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+        .setDepth(900);
+
       }
 
       resetPressure(quote) {
+
         this.lastPressureResetX = this.player.x;
+
         this.pressure = 0;
+
         this.physics.world.gravity.y = 620;
+
         this.currentJumpVelocity = -520;
+
         this.showQuote(quote);
+
       }
 
       showQuote(quote) {
+
         this.quoteText.setText(quote);
+
         this.quoteBox.setVisible(true);
+
         this.quoteText.setVisible(true);
-        this.time.delayedCall(3600, () => {
+
+        this.time.delayedCall(3500, () => {
+
           this.quoteBox.setVisible(false);
+
           this.quoteText.setVisible(false);
+
         });
+
       }
 
       update(time, delta) {
+
         const speed = 225;
 
         if (this.cursors.left.isDown) {
           this.player.body.setVelocityX(-speed);
-        } else if (this.cursors.right.isDown) {
+        }
+        else if (this.cursors.right.isDown) {
           this.player.body.setVelocityX(speed);
-        } else {
+        }
+        else {
           this.player.body.setVelocityX(0);
         }
 
-        if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && this.player.body.blocked.down) {
+        if (
+          Phaser.Input.Keyboard.JustDown(this.spaceKey) &&
+          this.player.body.blocked.down
+        ) {
           this.player.body.setVelocityY(this.currentJumpVelocity);
         }
 
-        this.updatePressure(delta);
+        this.updatePressure(time, delta);
+
         this.updatePressureUi();
+
       }
 
-      updatePressure(delta) {
-        /*
-          PRESSURE DIFFICULTY CONTROLS:
-          - PRESSURE_DISTANCE controls how far the player can travel after a reset
-            before the pressure gauge reaches 100%.
-          - BASE_GRAVITY and MAX_EXTRA_GRAVITY control how heavy the world becomes.
-          - BASE_JUMP_VELOCITY and MAX_JUMP_LOSS control how much weaker jumping gets.
-          Increase PRESSURE_DISTANCE or lower MAX_EXTRA_GRAVITY / MAX_JUMP_LOSS to make
-          the project easier; do the opposite to make expectation feel more crushing.
-        */
-        const PRESSURE_DISTANCE = 1050;
-        const BASE_GRAVITY = 620;
-        const MAX_EXTRA_GRAVITY = 650;
-        const BASE_JUMP_VELOCITY = -520;
-        const MAX_JUMP_LOSS = 250;
-        const HIGH_PRESSURE_THRESHOLD = 70;
+      updatePressure(time, delta) {
 
-        const distanceSinceReset = Math.max(0, this.player.x - this.lastPressureResetX);
-        this.pressure = Phaser.Math.Clamp((distanceSinceReset / PRESSURE_DISTANCE) * 100, 0, 100);
+    /*
+      BALANCED PRESSURE SYSTEM
 
-        const pressureRatio = this.pressure / 100;
-        this.physics.world.gravity.y = BASE_GRAVITY + (MAX_EXTRA_GRAVITY * pressureRatio);
-        this.currentJumpVelocity = BASE_JUMP_VELOCITY + (MAX_JUMP_LOSS * pressureRatio);
+      These values still make pressure FEEL heavy,
+      but keep the game playable.
 
-        this.struggleOverlay.setAlpha(Phaser.Math.Clamp((this.pressure - 55) / 180, 0, 0.25));
+      MAIN FIXES:
+      - Pressure builds slower
+      - Jump weakening is reduced
+      - Gravity increase is less extreme
+    */
 
-        this.shakeCooldown -= delta;
-        if (this.pressure >= HIGH_PRESSURE_THRESHOLD && this.shakeCooldown <= 0) {
-          const shakeStrength = 0.003 + (pressureRatio * 0.006);
-          this.cameras.main.shake(120, shakeStrength);
-          this.shakeCooldown = 950;
+    const PRESSURE_DISTANCE = 1450;
+
+    const BASE_GRAVITY = 620;
+
+    const MAX_EXTRA_GRAVITY = 360;
+
+    const BASE_JUMP_VELOCITY = -520;
+
+    const MAX_JUMP_LOSS = 120;
+
+    const HIGH_PRESSURE_THRESHOLD = 75;
+
+    const distanceSinceReset = Math.max(
+      0,
+      this.player.x - this.lastPressureResetX
+    );
+
+    this.pressure = Phaser.Math.Clamp(
+      (distanceSinceReset / PRESSURE_DISTANCE) * 100,
+      0,
+      100
+    );
+
+    const pressureRatio = this.pressure / 100;
+
+    // GRAVITY
+
+    this.physics.world.gravity.y =
+      BASE_GRAVITY + (MAX_EXTRA_GRAVITY * pressureRatio);
+
+    // JUMP POWER
+
+    this.currentJumpVelocity =
+      BASE_JUMP_VELOCITY + (MAX_JUMP_LOSS * pressureRatio);
+
+    // OVERLAY EFFECT
+
+    this.struggleOverlay.setAlpha(
+      Phaser.Math.Clamp((this.pressure - 60) / 220, 0, 0.18)
+    );
+
+    // CAMERA SHAKE
+
+    this.shakeCooldown -= delta;
+
+    if (
+      this.pressure >= HIGH_PRESSURE_THRESHOLD &&
+      this.shakeCooldown <= 0
+    ) {
+
+      const shakeStrength =
+        0.002 + (pressureRatio * 0.003);
+
+      this.cameras.main.shake(100, shakeStrength);
+
+      this.shakeCooldown = 1300;
+
+    }
+
+    // WHISPERS
+
+    if (
+      this.pressure > 40 &&
+      (!this.lastWhisperTime || time > this.lastWhisperTime + 5000)
+    ) {
+
+      const whispers = [
+        '“Something is rotten in the state of Denmark.”',
+        '“I ought to be thy Adam.”',
+        '“Monster.”',
+        '“Avenge.”',
+        '“Perform.”',
+        '“Belong.”',
+        '“Do not fail.”'
+      ];
+
+      const whisper = this.add.text(
+        this.player.x,
+        this.player.y - 90,
+        Phaser.Utils.Array.GetRandom(whispers),
+        {
+          fontFamily: 'Georgia',
+          fontSize: '20px',
+          color: '#ffffff'
         }
-      }
+      ).setAlpha(0.6);
+
+      this.tweens.add({
+        targets: whisper,
+        alpha: 0,
+        y: whisper.y - 40,
+        duration: 3000,
+        onComplete: () => whisper.destroy()
+      });
+
+      this.lastWhisperTime = time;
+
+    }
+
+  }
 
       updatePressureUi() {
+
         const width = 360 * (this.pressure / 100);
+
         const color = Phaser.Display.Color.Interpolate.ColorWithColor(
           new Phaser.Display.Color(255, 210, 60),
           new Phaser.Display.Color(230, 42, 58),
           100,
           this.pressure
         );
-        const colorValue = Phaser.Display.Color.GetColor(color.r, color.g, color.b);
+
+        const colorValue = Phaser.Display.Color.GetColor(
+          color.r,
+          color.g,
+          color.b
+        );
 
         this.pressureBar.setSize(width, 16);
+
         this.pressureBar.setFillStyle(colorValue, 1);
+
+        this.pressureBar.scaleY =
+          1 + Math.sin(this.time.now / 120) * 0.08;
+
         this.pressureText.setText(`${Math.round(this.pressure)}%`);
+
+        if (this.pressure > 85) {
+
+          this.warningText.setText(
+            'THE MASK IS BECOMING TOO HEAVY'
+          );
+
+        }
+        else if (this.pressure > 65) {
+
+          this.warningText.setText(
+            'YOU ARE LOSING YOURSELF'
+          );
+
+        }
+        else if (this.pressure > 40) {
+
+          this.warningText.setText(
+            'EXPECTATIONS ARE GROWING'
+          );
+
+        }
+        else {
+
+          this.warningText.setText('');
+
+        }
+
       }
+
     }
 
     class EndScene extends Phaser.Scene {
+
       constructor() {
         super('EndScene');
       }
 
       create() {
-        this.cameras.main.setBackgroundColor('#050509');
 
-        this.add.text(GAME_WIDTH / 2, 125, 'Synthesis Complete', {
-          fontFamily: 'Georgia, serif',
-          fontSize: '48px',
-          color: '#ffffff',
-          align: 'center'
-        }).setOrigin(0.5);
+        this.cameras.main.setBackgroundColor('#050509');
 
         this.add.text(
           GAME_WIDTH / 2,
-          270,
-          'In Brother, Frankenstein, and Hamlet, characters are trapped by the masks society forces them to wear. The journey is not just reaching the end, but surviving the weight.',
+          120,
+          'Synthesis Complete',
           {
-            fontFamily: 'Georgia, serif',
-            fontSize: '27px',
-            color: '#e8e8ff',
-            align: 'center',
-            wordWrap: { width: 790 }
+            fontFamily: 'Georgia',
+            fontSize: '50px',
+            color: '#ffffff'
           }
         ).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 430, 'Press SPACE to return to the title screen', {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '21px',
-          color: '#ffd35a'
-        }).setOrigin(0.5);
+        this.add.text(
+          GAME_WIDTH / 2,
+          265,
+          'The journey through Brother, Frankenstein, and Hamlet reveals that societal expectations can shape, distort, and even destroy identity. The weight of the mask grows heavier the longer it is worn.',
+          {
+            fontFamily: 'Georgia',
+            fontSize: '28px',
+            color: '#e6e6ff',
+            align: 'center',
+            wordWrap: { width: 800 }
+          }
+        ).setOrigin(0.5);
 
-        this.input.keyboard.once('keydown-SPACE', () => this.scene.start('StartScene'));
+        this.add.text(
+          GAME_WIDTH / 2,
+          420,
+          'Press SPACE to return to the title screen',
+          {
+            fontFamily: 'Arial',
+            fontSize: '22px',
+            color: '#ffd35a'
+          }
+        ).setOrigin(0.5);
+
+        this.input.keyboard.once('keydown-SPACE', () => {
+          this.scene.start('StartScene');
+        });
+
       }
+
     }
 
     const config = {
@@ -426,6 +856,7 @@
       width: GAME_WIDTH,
       height: GAME_HEIGHT,
       backgroundColor: '#050509',
+
       physics: {
         default: 'arcade',
         arcade: {
@@ -433,7 +864,13 @@
           debug: false
         }
       },
-      scene: [StartScene, GameScene, EndScene],
+
+      scene: [
+        StartScene,
+        GameScene,
+        EndScene
+      ],
+
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -441,6 +878,7 @@
     };
 
     new Phaser.Game(config);
+
   </script>
 </body>
 </html>
