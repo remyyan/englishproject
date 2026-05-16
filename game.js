@@ -123,8 +123,6 @@ class GameScene extends Phaser.Scene {
     this.taskActive = false;
     this.taskComplete = {};
     this.currentTask = null;
-    
-    // NEW: Controls whether the game is paused for a popup
     this.isReadingFragment = false;
 
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, GAME_HEIGHT);
@@ -281,12 +279,10 @@ class GameScene extends Phaser.Scene {
     this.drawPlayer(this.playerGfx, 0, 0, 1.0);
 
     this.player = this.add.rectangle(200, 360, 30, 48, 0xffffff, 0);
-
     this.physics.add.existing(this.player);
 
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(30, 48);
-
     this.player.body.setDragX(800);
 
     this.physics.add.collider(this.player, this.platforms, (player, platform) => {
@@ -353,9 +349,7 @@ class GameScene extends Phaser.Scene {
       this.pauseUntil = this.time.now + 1000;
       this.player.body.setVelocity(0, 0);
       
-      // NEW: Show the immersive popup instead of the tiny quote box
       this.showFragmentPopup(fragment.quote, fragment.speaker, fragment.significance);
-      
       this.flashFragmentEffect(fragment.x, fragment.y, fragment.memoryColor);
     });
   }
@@ -441,9 +435,9 @@ class GameScene extends Phaser.Scene {
   createTaskStations() {
     this.taskStations = this.physics.add.staticGroup();
     const tasks = [
-      { x: 920, y: 430, id: 'brother', name: 'Fix the Valve', color: 0xf2c26b, accentStr: '#f2c26b', icon: '⚙', question: 'Choose the response that eases societal pressure.', options: ['OVERLOAD', 'BALANCE', 'SHUT OFF'], answer: 1, success: 'Equilibrium found. The watcher softens.' },
-      { x: 3890, y: 405, id: 'frankenstein', name: 'Reset Circuit', color: 0x9ff4ff, accentStr: '#9ff4ff', icon: '⚡', question: 'Find the choice that calms the creation.', options: ['REMOVE HEART', 'REPAIR', 'ABANDON'], answer: 1, success: 'The laboratory quiets. Something heals.' },
-      { x: 7760, y: 405, id: 'hamlet', name: 'Balance the Stage', color: 0xd4b0ff, accentStr: '#d4b0ff', icon: '♟', question: 'What loosens the grip of performance?', options: ['ACT HARDER', 'STAND STILL', 'QUESTION'], answer: 2, success: 'Doubt steadies you. The stage breathes again.' }
+      { x: 920, y: 430, id: 'brother', name: 'Maintain the Mask', color: 0xf2c26b, accentStr: '#f2c26b', icon: '⚙', type: 'balance', question: 'Balance the crushing weight of expectation without breaking.', success: 'Equilibrium found. The watcher softens.' },
+      { x: 3890, y: 405, id: 'frankenstein', name: 'Calm the Heart', color: 0x9ff4ff, accentStr: '#9ff4ff', icon: '♥', type: 'rhythm', question: 'Regulate the monstrous heartbeat. Prove your humanity.', success: 'The laboratory quiets. Something heals.' },
+      { x: 7760, y: 405, id: 'hamlet', name: 'Play the Role', color: 0xd4b0ff, accentStr: '#d4b0ff', icon: '🎭', type: 'sequence', question: 'Follow the script flawlessly. Perform the required sequence.', success: 'Doubt steadies you. The stage breathes again.' }
     ];
 
     tasks.forEach((task) => {
@@ -536,7 +530,6 @@ class GameScene extends Phaser.Scene {
       lampG.lineStyle(2, 0x888888, 0.8);
       lampG.strokeLineShape(new Phaser.Geom.Line(item.x, item.y, item.x, item.y - 16));
 
-      // Fixed: Dedicated Graphics object to draw the perfectly centered, swinging beams
       const beamGfx = this.add.graphics();
       
       const watchLabel = this.add.text(item.x, item.y - 28, '◉ WATCH', {
@@ -590,7 +583,7 @@ class GameScene extends Phaser.Scene {
   }
 
   createPortal() {
-    this.portal = this.add.container(WORLD_WIDTH - 135, GROUND_Y - 80);
+    this.portal = this.add.container(WORLD_WIDTH - 135, GROUND_Y - 180);    
     const g = this.add.graphics();
     g.lineStyle(3, 0x8f5cff, 0.5);
     g.strokeRoundedRect(-38, -68, 76, 136, 12);
@@ -686,10 +679,6 @@ class GameScene extends Phaser.Scene {
       fontFamily: 'Georgia, serif', fontSize: '20px', color: '#e8e8ff', align: 'center',
       wordWrap: { width: 820 }
     }).setOrigin(0.5).setScrollFactor(0).setDepth(1003).setVisible(false);
-    this.taskOptionText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, '', {
-      fontFamily: 'Arial', fontSize: '17px', color: '#ffd35a', align: 'center',
-      wordWrap: { width: 820 }
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1003).setVisible(false);
   }
 
   showQuote(quote, duration = 3500) {
@@ -712,7 +701,6 @@ class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    // NEW: Stop the entire game loop if the player is reading a fragment popup!
     if (this.isReadingFragment) return;
 
     this.updateSection();
@@ -724,9 +712,7 @@ class GameScene extends Phaser.Scene {
 
     if (this.taskActive) {
       this.player.body.setVelocityX(0);
-      if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) this.changeTaskChoice(-1);
-      if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) this.changeTaskChoice(1);
-      if (Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.keyE)) this.submitTask();
+      this.updateMiniGame(time, delta);
       this.updatePressure(time, delta, false);
       this.updatePressureUi();
       return;
@@ -814,7 +800,6 @@ class GameScene extends Phaser.Scene {
       const inBeamHeight = this.player.y > spot.y + 80;
       const correctSection = Math.abs(this.player.x - spot.x) < spot.range + 320;
 
-      // FIXED: Safely dodgeable by jumping, perfectly centered hitbox
       if (caughtH && inBeamHeight && correctSection && time > this.lastSpotlightHit + 1800 && Math.abs(this.player.body.velocity.x) > 0 && this.player.body.blocked.down) {
         this.lastSpotlightHit = time;
         this.spotlightWarningUntil = time + 1200;
@@ -977,52 +962,193 @@ class GameScene extends Phaser.Scene {
 
   startTask(station) {
     if (this.taskComplete[station.taskId]) {
-      this.showQuote('Task already completed. Keep moving toward the next checkpoint.', 2200);
+      this.showQuote('Task already completed. Keep moving.', 2200);
       return;
     }
     this.taskActive = true;
     this.currentTask = station.taskData;
-    this.taskChoice = 0;
 
     this.taskPanelGfx.clear();
     this.taskPanelGfx.fillStyle(0x000000, 0.92);
-    this.taskPanelGfx.fillRoundedRect(GAME_WIDTH / 2 - 450, GAME_HEIGHT - 145, 900, 130, 10);
-    this.taskPanelGfx.lineStyle(1.5, this.currentTask.color, 0.45);
-    this.taskPanelGfx.strokeRoundedRect(GAME_WIDTH / 2 - 450, GAME_HEIGHT - 145, 900, 130, 10);
-    this.taskPanelGfx.setVisible(true);
+    this.taskPanelGfx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    this.taskPanelGfx.setVisible(true).setDepth(2000);
 
-    this.taskPromptText.setText(this.currentTask.question).setVisible(true);
-    this.taskOptionText.setText(this.formatTaskOptions()).setVisible(true);
+    let instr = '';
+    if (this.currentTask.type === 'balance') instr = "HOLD SPACE to balance the mask inside the safe zone.";
+    if (this.currentTask.type === 'rhythm') instr = "PRESS SPACE exactly when the pulse crosses the center.";
+    if (this.currentTask.type === 'sequence') instr = "MEMORIZE and REPEAT the performance using Arrow Keys.";
+
+    this.taskPromptText.setText(this.currentTask.question + '\n\n' + instr).setVisible(true);
+    this.taskPromptText.setPosition(GAME_WIDTH / 2, 130);
+    this.taskPromptText.setFontSize('22px');
+    this.taskPromptText.setDepth(2001);
+
+    if (this.taskOptionText) this.taskOptionText.setVisible(false);
+    if (this.taskCardsGroup) this.taskCardsGroup.destroy(true);
+    
+    this.taskCardsGroup = this.add.group();
+    this.mgGfx = this.add.graphics().setScrollFactor(0).setDepth(2001);
+    this.taskCardsGroup.add(this.mgGfx);
+
+    this.mgState = { status: 'playing' };
+
+    if (this.currentTask.type === 'balance') {
+      this.mgState.val = 50; this.mgState.vel = 0; this.mgState.timeInZone = 0;
+    } else if (this.currentTask.type === 'rhythm') {
+      this.mgState.val = 0; this.mgState.dir = 1; this.mgState.hits = 0; this.mgState.speed = 0.055;
+    } else if (this.currentTask.type === 'sequence') {
+      this.mgState.sequence = [Phaser.Math.Between(0,3), Phaser.Math.Between(0,3), Phaser.Math.Between(0,3), Phaser.Math.Between(0,3)];
+      this.mgState.playerStep = 0; this.mgState.showStep = 0;
+      this.mgState.lastShowTime = this.time.now + 800;
+      this.mgState.phase = 'showing';
+    }
   }
 
-  formatTaskOptions() {
-    return this.currentTask.options.map((o, i) => i === this.taskChoice ? `[ ${o} ]` : `  ${o}  `).join('     ');
+  updateMiniGame(time, delta) {
+    if (this.mgState.status !== 'playing') return;
+
+    const cx = GAME_WIDTH / 2;
+    const cy = GAME_HEIGHT / 2 + 50;
+    this.mgGfx.clear();
+
+    if (this.currentTask.type === 'balance') {
+      this.mgGfx.lineStyle(2, 0xffffff, 0.5);
+      this.mgGfx.strokeRect(cx - 20, cy - 100, 40, 200);
+      
+      this.mgGfx.fillStyle(0x55ff55, 0.25);
+      this.mgGfx.fillRect(cx - 20, cy - 30, 40, 60);
+
+      if (this.spaceKey.isDown) this.mgState.vel -= 0.007 * delta;
+      else this.mgState.vel += 0.004 * delta;
+      this.mgState.vel *= 0.88; 
+      this.mgState.val += this.mgState.vel;
+
+      const yPos = cy - 100 + (this.mgState.val / 100) * 200;
+      this.mgGfx.fillStyle(0xf2c26b, 1);
+      this.mgGfx.fillRect(cx - 25, yPos - 5, 50, 10);
+
+      if (this.mgState.val > 35 && this.mgState.val < 65) {
+        this.mgState.timeInZone += delta;
+        this.mgGfx.fillStyle(0x55ff55, 0.8);
+        this.mgGfx.fillRect(cx - 80, cy + 100, 160, 6);
+        this.mgGfx.fillStyle(0xffffff, 1);
+        this.mgGfx.fillRect(cx - 80, cy + 100, (this.mgState.timeInZone/3000)*160, 6);
+        if (this.mgState.timeInZone >= 3000) this.resolveTask(true);
+      } else {
+        this.mgState.timeInZone = Math.max(0, this.mgState.timeInZone - delta * 0.5);
+      }
+      if (this.mgState.val < 0 || this.mgState.val > 100) this.resolveTask(false);
+
+    } else if (this.currentTask.type === 'rhythm') {
+      this.mgGfx.lineStyle(2, 0xffffff, 0.5);
+      this.mgGfx.strokeRect(cx - 150, cy - 20, 300, 40);
+      
+      this.mgGfx.fillStyle(0x9ff4ff, 0.35);
+      this.mgGfx.fillRect(cx - 15, cy - 20, 30, 40);
+
+      this.mgState.val += this.mgState.speed * this.mgState.dir * delta;
+      if (this.mgState.val >= 100) { this.mgState.val = 100; this.mgState.dir = -1; }
+      if (this.mgState.val <= 0) { this.mgState.val = 0; this.mgState.dir = 1; }
+
+      const xPos = cx - 150 + (this.mgState.val / 100) * 300;
+      this.mgGfx.fillStyle(0xffffff, 1);
+      this.mgGfx.fillRect(xPos - 3, cy - 30, 6, 60);
+
+      for(let i=0; i<3; i++) {
+        this.mgGfx.fillStyle(i < this.mgState.hits ? 0x55ff55 : 0x444444, 1);
+        this.mgGfx.fillCircle(cx - 40 + i*40, cy + 60, 8);
+      }
+
+      if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+        if (this.mgState.val > 45 && this.mgState.val < 55) {
+          this.mgState.hits++;
+          this.cameras.main.flash(150, 100, 255, 100);
+          this.mgState.speed += 0.02; 
+          if (this.mgState.hits >= 3) this.resolveTask(true);
+        } else {
+          this.resolveTask(false);
+        }
+      }
+
+    } else if (this.currentTask.type === 'sequence') {
+      for(let i=0; i<4; i++) {
+        this.mgGfx.lineStyle(2, 0xffffff, 0.3);
+        this.mgGfx.strokeRoundedRect(cx - 130 + i*70, cy - 30, 50, 60, 8);
+        
+        let drawArrow = false;
+        let aColor = 0xffffff;
+
+        if (this.mgState.phase === 'showing' && i === this.mgState.showStep && time > this.mgState.lastShowTime) {
+          this.mgGfx.fillStyle(0xd4b0ff, 0.5);
+          this.mgGfx.fillRoundedRect(cx - 130 + i*70, cy - 30, 50, 60, 8);
+          drawArrow = true;
+        } else if (this.mgState.phase === 'input') {
+          if (i < this.mgState.playerStep) {
+             drawArrow = true;  
+             aColor = 0x55ff55; 
+          } else {
+             drawArrow = false;
+          }
+        }
+
+        if (drawArrow) {
+          const ax = cx - 105 + i*70; const ay = cy; const dir = this.mgState.sequence[i];
+          this.mgGfx.fillStyle(aColor, 1);
+          if (dir===0) { this.mgGfx.fillTriangle(ax, ay-12, ax-10, ay+5, ax+10, ay+5); this.mgGfx.fillRect(ax-4, ay+5, 8, 10); } 
+          if (dir===1) { this.mgGfx.fillTriangle(ax+12, ay, ax-5, ay-10, ax-5, ay+10); this.mgGfx.fillRect(ax-15, ay-4, 10, 8); } 
+          if (dir===2) { this.mgGfx.fillTriangle(ax, ay+12, ax-10, ay-5, ax+10, ay-5); this.mgGfx.fillRect(ax-4, ay-15, 8, 10); } 
+          if (dir===3) { this.mgGfx.fillTriangle(ax-12, ay, ax+5, ay-10, ax+5, ay+10); this.mgGfx.fillRect(ax+5, ay-4, 10, 8); } 
+        }
+      }
+
+      if (this.mgState.phase === 'showing') {
+        if (time > this.mgState.lastShowTime + 600) {
+          this.mgState.showStep++;
+          this.mgState.lastShowTime = time;
+          if (this.mgState.showStep >= 4) this.mgState.phase = 'input';
+        }
+      } else {
+        let input = -1;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) input = 0;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) input = 1;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) input = 2;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) input = 3;
+
+        if (input !== -1) {
+          if (input === this.mgState.sequence[this.mgState.playerStep]) {
+            this.mgState.playerStep++;
+            if (this.mgState.playerStep >= 4) this.resolveTask(true);
+          } else {
+            this.resolveTask(false);
+          }
+        }
+      }
+    }
   }
 
-  changeTaskChoice(dir) {
-    if (!this.currentTask) return;
-    this.taskChoice = Phaser.Math.Wrap(this.taskChoice + dir, 0, this.currentTask.options.length);
-    this.taskOptionText.setText(this.formatTaskOptions());
-  }
-
-  submitTask() {
-    if (!this.currentTask) return;
+  resolveTask(correct) {
+    this.mgState.status = correct ? 'won' : 'lost';
     const task = this.currentTask;
-    const correct = task.answer === this.taskChoice;
-    this.taskActive = false;
-    this.taskPanelGfx.setVisible(false);
-    this.taskPromptText.setVisible(false);
-    this.taskOptionText.setVisible(false);
 
     if (correct) {
+      this.cameras.main.flash(400, 100, 255, 100, true);
       this.taskComplete[task.id] = true;
       this.showQuote('✓  ' + task.success, 2800);
-      this.easePressure(-18);
+      
+      this.easePressure(-18); 
     } else {
-      this.spikePressure(18, '✕  TASK FAILED');
-      this.showQuote('The task went wrong. The mask grows heavier.', 2600);
+      this.cameras.main.shake(400, 0.015);
+      this.spikePressure(18, '✕  THE MASK SLIPPED');
+      this.showQuote('You broke under the pressure. The mask grows heavier.', 2600);
     }
-    this.currentTask = null;
+
+    this.time.delayedCall(700, () => {
+      this.taskActive = false;
+      this.taskPanelGfx.setVisible(false);
+      this.taskPromptText.setVisible(false);
+      if (this.taskCardsGroup) this.taskCardsGroup.destroy(true);
+      this.currentTask = null;
+    });
   }
 
   updateTaskInstruction() {
@@ -1044,7 +1170,7 @@ class GameScene extends Phaser.Scene {
     this.player.body.reset(this.lastCheckpoint.x, this.lastCheckpoint.y);
     this.player.body.setVelocity(0, 0);
     this.showQuote('You fell. Returned to the last checkpoint book.', 2600);
-    this.easePressure(-50); // Gives pressure bar relief when dying!
+    this.easePressure(-50); 
     this.cameras.main.flash(130, 255, 255, 255, true);
   }
 }
